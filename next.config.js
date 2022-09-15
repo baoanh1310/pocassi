@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: [dedicatedEndPoint, 'icebear.infura-ipfs.io'],
+    domains: ['icebear.infura-ipfs.io'],
   },
   env: {
     BASE_URL: process.env.BASE_URL,
