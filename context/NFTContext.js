@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import React, { useState, useEffect } from 'react';
 import Web3Modal from 'web3modal';
 import { ethers } from 'ethers';
@@ -13,11 +14,13 @@ const options = { host: 'ipfs.infura.io', protocol: 'https', port: 5001, headers
 const client = ipfsHttpClient(options);
 const dedicatedEndPoint = 'https://icebear.infura-ipfs.io';
 
+const fetchContract = (signerOrProvider) => new ethers.Contract(MarketAddress, MarketAddressABI, signerOrProvider);
+
 export const NFTContext = React.createContext();
 
 export const NFTProvider = ({ children }) => {
   const [currentAccount, setCurrentAccount] = useState('');
-  const nftCurrency = 'MATIC';
+  const nftCurrency = 'ETH';
 
   const checkIfWalletIsConnected = async () => {
     if (!window.ethereum) return alert('Please install MetaMask');
@@ -32,6 +35,7 @@ export const NFTProvider = ({ children }) => {
 
   useEffect(() => {
     checkIfWalletIsConnected();
+    createSale('icebear', '0.0025');
   }, []);
 
   const connectWallet = async () => {
@@ -52,8 +56,37 @@ export const NFTProvider = ({ children }) => {
     }
   };
 
+  const createNFT = async (formInput, fileUrl, router) => {
+    const { name, description, price } = formInput;
+    if (!name || !description || !price || !fileUrl) return;
+
+    const data = JSON.stringify({ name, description, image: fileUrl });
+    try {
+      const added = await client.add(data);
+      const url = `https://icebear.infura-ipfs.io/ipfs/${added.path}`;
+      console.log('Doing');
+      await createSale(url, price);
+      router.push('/');
+    } catch (error) {
+      console.log('Error uploading file to IPFS.');
+    }
+  };
+
+  const createSale = async (url, formInputPrice, isReselling, id) => {
+    const web3modal = new Web3Modal();
+    const connection = await web3modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+
+    const price = ethers.utils.parseUnits(formInputPrice, 'ether');
+    const contract = fetchContract(signer);
+    const listingPrice = await contract.getListingPrice();
+    const transaction = await contract.createToken(url, price, { value: listingPrice.toString() });
+    await transaction.wait();
+  };
+
   return (
-    <NFTContext.Provider value={{ nftCurrency, currentAccount, connectWallet, uploadToIPFS }}>
+    <NFTContext.Provider value={{ nftCurrency, currentAccount, connectWallet, uploadToIPFS, createNFT }}>
       { children }
     </NFTContext.Provider>
   );
