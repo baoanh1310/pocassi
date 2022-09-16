@@ -10,7 +10,9 @@ const MyApp = ({ Component, pageProps }) => (
     <ThemeProvider attribute="class">
       <div className="dark:bg-nft-dark bg-white min-h-screen">
         <Navbar />
-        <Component {...pageProps} />
+        <div className="pt-65">
+          <Component {...pageProps} />
+        </div>
         <Footer />
       </div>
       <Script src="https://kit.fontawesome.com/eb007f4b88.js" crossOrigin="anonymous" />
