@@ -2,15 +2,56 @@ import { useState, useEffect, useContext } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { NFTContext } from '../context/NFTContext';
-import { NFTCard, Loader, Button } from '../components';
+import { NFTCard, Loader, Button, Modal } from '../components';
 import { shortenAddress } from '../utils/shortenAddress';
 import images from '../assets';
+
+const PaymentBodyCmp = ({ nft, nftCurrency }) => (
+  <div className="flex flex-col">
+    <div className="flexBetween">
+      <p className="font-poppins dark:text-white text-nft-black-1 font-semibold text-base minlg:text-xl">Item</p>
+      <p className="font-poppins dark:text-white text-nft-black-1 font-semibold text-base minlg:text-xl">Subtotal</p>
+    </div>
+
+    <div className="flexBetweenStart my-5">
+      <div className="flex-1 flexStartCenter">
+        <div className="relative w-28 h-28">
+          <Image src={nft.image || images[`nft${nft.i}`]} layout="fill" objectFit="cover" />
+        </div>
+        <div className="flexCenterStart flex-col ml-5">
+          <p className="font-poppins dark:text-white text-nft-black-1 font-semibold text-sm minlg:text-xl">{shortenAddress(nft.seller)}</p>
+          <p className="font-poppins dark:text-white text-nft-black-1 text-sm minlg:text-xl font-normal">{nft.name}</p>
+        </div>
+      </div>
+
+      <div>
+        <p className="font-poppins dark:text-white text-nft-black-1 text-sm minlg:text-xl font-normal">{nft.price} <span className="font-semibold">{nftCurrency}</span></p>
+      </div>
+    </div>
+
+    <div className="flexBetween mt-10">
+      <p className="font-poppins dark:text-white text-nft-black-1 font-semibold text-base minlg:text-xl">Total</p>
+      <p className="font-poppins dark:text-white text-nft-black-1 text-base minlg:text-xl font-normal">{nft.price} <span className="font-semibold">{nftCurrency}</span></p>
+    </div>
+  </div>
+);
 
 const NFTDetails = () => {
   const { currentAccount, nftCurrency } = useContext(NFTContext);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const [nft, setNft] = useState({ image: '', itemId: '', name: '', owner: '', price: '', seller: '' });
+  const [paymentModal, setPaymentModal] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
+
+  useEffect(() => {
+    // disable body scroll when navbar is open
+    if (paymentModal || successModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'visible';
+    }
+  }, [paymentModal, successModal]);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -78,12 +119,33 @@ const NFTDetails = () => {
                   btnName={`Buy for ${nft.price} ${nftCurrency}`}
                   btnType="primary"
                   classStyles="mr-5 sm:mr-0 sm:mb-5 rounded-xl"
-                  handleClick={() => {}}
+                  handleClick={() => setPaymentModal(true)}
                 />
               )}
         </div>
       </div>
 
+      {paymentModal && (
+      <Modal
+        header="Check Out"
+        body={<PaymentBodyCmp nft={nft} nftCurrency={nftCurrency} />}
+        footer={(
+          <div className="flex flex-row sm:flex-col">
+            <Button
+              btnName="Checkout"
+              classStyles="mr-5 sm:mr-0 rounded-xl"
+              handleClick={() => {}}
+            />
+            <Button
+              btnName="Cancel"
+              classStyles="rounded-xl"
+              handleClick={() => setPaymentModal(false)}
+            />
+          </div>
+        )}
+        handleClose={() => setPaymentModal(false)}
+      />
+      )}
     </div>
   );
 };
