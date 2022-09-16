@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/router';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
@@ -57,11 +57,47 @@ const ButtonGroup = ({ setActive, router }) => {
   );
 };
 
+const checkActive = (active, setActive, router) => {
+  switch (router.pathname) {
+    case '/':
+      if (active !== 'Explore NFTs') setActive('Explore NFTs');
+      break;
+    case '/listed-nfts':
+      if (active !== 'Listed NFTs') setActive('Listed NFTs');
+      break;
+    case '/my-nfts':
+      if (active !== 'My NFTs') setActive('My NFTs');
+      break;
+    case '/create-nft':
+      if (active !== '') setActive('');
+      break;
+    default:
+      setActive('');
+  }
+};
+
 const Navbar = () => {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const [active, setActive] = useState('Explore NFTs');
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    setTheme('dark');
+  }, []);
+
+  useEffect(() => {
+    checkActive(active, setActive, router);
+  }, [router.pathname]);
+
+  useEffect(() => {
+    // disable body scroll when navbar is open
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'visible';
+    }
+  }, [isOpen]);
 
   return (
     <nav className="flexBetween w-full fixed z-10 p-4 flex-row border-b dark:bg-nft-dark bg-white dark:border-nft-black-1 border-nft-gray-1">
