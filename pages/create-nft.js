@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useTheme } from 'next-themes';
 
 import { NFTContext } from '../context/NFTContext';
-import { Input, Button } from '../components';
+import { Input, Button, Loader } from '../components';
 import images from '../assets';
 
 const CreateNFT = () => {
@@ -15,7 +15,7 @@ const CreateNFT = () => {
   });
   const router = useRouter();
   const { theme } = useTheme();
-  const { uploadToIPFS, createNFT } = useContext(NFTContext);
+  const { isLoadingNFT, uploadToIPFS, createNFT } = useContext(NFTContext);
 
   const onDrop = useCallback(async (acceptedFile) => {
     // upload image to ipfs
@@ -36,10 +36,18 @@ const CreateNFT = () => {
     ${isDragReject ? ' border-file-reject' : ''}`
   ), [isDragActive, isDragAccept, isDragReject]);
 
+  if (isLoadingNFT) {
+    return (
+      <div className="flexStart min-h-screen">
+        <Loader />
+      </div>
+    );
+  }
+
   return (
     <div className="flex justify-center sm:px-4 p-12">
       <div className="w-3/5 md:w-full">
-        <h1 className="font-poppins dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold ml-4 xs:ml-0 mt-65">Create new NFT</h1>
+        <h1 className="font-poppins dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold xs:ml-0 mt-65">Create new NFT</h1>
         <div className="mt-16">
           <p className="font-poppins dark:text-white text-nft-black-1 font-semibold text-xl">Upload File</p>
           <div className="mt-4">

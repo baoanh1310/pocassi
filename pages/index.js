@@ -96,7 +96,7 @@ const Home = () => {
     };
   });
 
-  const topCreators = getCreators(nftsCopy);
+  const topCreators = getCreators(nfts);
 
   return (
     <div className="flex justify-center sm:px-4 p-12">
